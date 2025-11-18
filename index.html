@@ -1,657 +1,909 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-M">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stundenverlauf: Die zwei Stimmen der Zeitung</title>
-    <!-- Einbindung von Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Einbindung von Google Fonts (Merriweather, PT Serif) -->
+    <title>Textsorten-Transformator: Ferienkürzung</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Roboto:wght@400;500;700&family=Courier+Prime:wght@400;700&family=Oswald:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- KORRIGIERTE REIHENFOLGE: React muss VOR Lucide geladen werden -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
-
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        /* Basis-Schriftart: PT Serif (leserlich, klassisch) */
+        :root {
+            --paper: #f9f7f1;
+            --ink: #2c2c2c;
+            --accent: #0277bd; 
+            
+            /* Highlight-Farben für Folie 1 */
+            --highlight-fakt: #a5d6a7; /* Grün */
+            --highlight-neutral: #81d4fa; /* Blau */
+            --highlight-meinung: #ffcc80; /* Orange */
+            --highlight-irony: #e1bee7; /* Lila */
+            
+            --neutral: #b0bec5;
+            --opinion: #ef6c00;
+            --irony: #7b1fa2;
+        }
+
         body {
-            font-family: 'PT Serif', serif;
-            /* Neuer, wärmerer Papier-Hintergrund */
-            background-color: #f4f1ea; 
-            color: #1f2937; /* Tailwind 'gray-800' */
+            font-family: 'Roboto', sans-serif;
+            background-color: #e0e0e0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
-        
-        /* Spezielle Serif-Schriftart für "Zeitungs"-Überschriften */
-        .font-newspaper {
+
+        .board-container {
+            width: 1280px;
+            height: 768px;
+            background-color: var(--paper);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            background: #fff;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            background: transparent;
             font-family: 'Merriweather', serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-right: 1px solid #eee;
+            max-width: 150px;
         }
 
-        /* Styling für die "Folien" der Präsentation */
-        .slide {
-            display: none; /* Standardmäßig ausgeblendet */
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            min-height: 75vh; 
-            /* Neuer Folien-Hintergrund: Klares Weiß für Kontrast */
-            background-color: #ffffff;
-            border: 1px solid #e5e7eb; /* Tailwind 'gray-200' */
+        .nav-btn:hover { background-color: #f5f5f5; }
+        .nav-btn.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        /* Content Area */
+        .stage {
+            flex: 1;
+            padding: 30px 60px;
+            position: relative;
+            display: none; 
+            animation: fadeIn 0.6s ease;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .stage.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-family: 'Merriweather', serif;
+            font-size: 32px;
+            color: var(--ink);
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        /* --- Phase 1: Analyse (Bericht) --- */
+        .report-visual {
+            font-size: 60px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .text-box-large {
+            font-family: 'Merriweather', serif;
+            font-size: 34px;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--ink);
+            max-width: 950px;
+            background: #fff;
+            padding: 30px 40px;
+            border-left: 10px solid #607d8b;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-radius: 4px;
         }
         
-        /* Die aktive Folie wird sichtbar gemacht */
-        .slide.active {
-            display: block;
-            opacity: 1;
+        /* Interaktive Text-Markierung */
+        .word {
+            display: inline-block;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: 0 1px;
+            transition: background-color 0.4s, box-shadow 0.4s;
+            color: var(--ink);
+        }
+        
+        .word.highlight-fakt { background-color: var(--highlight-fakt); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+        .word.highlight-neutral { background-color: var(--highlight-neutral); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+        .word.highlight-meinung { background-color: var(--highlight-meinung); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+
+        /* Interaktive Aufdeckung der Merkmale */
+        #merkmale-wrapper {
+            width: 100%;
+            max-width: 1000px;
+            margin-top: auto;
+            text-align: center;
+        }
+        
+        .show-merkmale-btn {
+            padding: 12px 25px;
+            background-color: var(--ink);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .show-merkmale-btn:hover { transform: translateY(-2px); }
+
+        .analysis-grid {
+            display: none; 
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            padding-top: 15px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .analysis-grid.visible { display: flex; }
+
+        .analysis-card {
+            background: white;
+            border: 2px dashed #bbb;
+            border-radius: 8px;
+            width: 250px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        /* Deaktivierte Navigations-Buttons */
-        .nav-button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
+        .analysis-card[data-key="fakt"] { border-color: var(--highlight-fakt); }
+        .analysis-card[data-key="neutral"] { border-color: var(--highlight-neutral); }
+        .analysis-card[data-key="meinung"] { border-color: var(--highlight-meinung); }
+
+        .analysis-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .analysis-card .hidden-content {
+            display: none;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 22px; 
+            text-align: center;
+            padding: 10px;
+            position: absolute;
+            width: 100%;
+        }
+        
+        .analysis-card .placeholder { 
+            font-size: 18px; 
+            color: #555; 
+            font-weight: 700; 
+            padding: 10px; 
+            text-align: center;
+        } 
+
+        .analysis-card.revealed[data-key="fakt"] { background: #e8f5e9; border-color: #4caf50; border-style: solid; }
+        .analysis-card.revealed[data-key="fakt"] .hidden-content { color: #2e7d32; display: flex; justify-content: center; height: 100%; align-items: center;}
+        
+        .analysis-card.revealed[data-key="neutral"] { background: #e1f5fe; border-color: #039be5; border-style: solid; }
+        .analysis-card.revealed[data-key="neutral"] .hidden-content { color: #0277bd; display: flex; justify-content: center; height: 100%; align-items: center;}
+        
+        .analysis-card.revealed[data-key="meinung"] { background: #fff8e1; border-color: #fbc02d; border-style: solid; }
+        .analysis-card.revealed[data-key="meinung"] .hidden-content { color: #f57f17; display: flex; justify-content: center; height: 100%; align-items: center;}
+        
+        .analysis-card.revealed .hidden-content { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .analysis-card.revealed .placeholder { display: none; }
+
+
+        /* --- Phase 2 & 3: Slider Logic & Text Layout --- */
+        .slider-wrapper {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 40px;
+            position: relative;
+            padding: 20px 0;
         }
 
-        /* Styling für die Fortschritts-Punkte */
-        .progress-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #cbd5e1; /* Tailwind 'slate-300' */
-            transition: background-color 0.3s ease;
+        /* Neutraler Track */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0; 
+            border-radius: 10px;
+            outline: none;
+            position: relative;
+            z-index: 1;
             cursor: pointer;
         }
-        
-        .progress-dot.active {
-            background-color: #0d9488; /* Tailwind 'teal-600' */
-        }
 
-        /* Styling für das Passwort-Inputfeld */
-        .password-input {
-            font-family: 'PT Serif', serif;
-            border: 2px solid #9ca3af; /* Tailwind 'gray-400' */
-            background-color: #fdfdfc;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            font-size: 1.1rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .password-input:focus {
-            outline: none;
-            border-color: #0d9488; /* Tailwind 'teal-600' */
-            box-shadow: 0 0 5px rgba(13, 148, 136, 0.3);
-        }
-        
-        /* Styling für Lucide-Icons */
-        .icon-sm {
-            width: 18px;
-            height: 18px;
-            stroke-width: 2.5;
-            display: inline-block;
-            margin-right: 8px;
-            vertical-align: middle;
-            margin-top: -3px;
-        }
-        .icon-md {
-            width: 24px;
-            height: 24px;
-            stroke-width: 2;
-        }
-        .icon-lg {
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
             width: 32px;
             height: 32px;
-            stroke-width: 2;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid var(--ink);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, border-color 0.3s;
+            margin-top: -12px;
         }
+        
+        input[type=range]::-moz-range-thumb {
+             width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid var(--ink);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
+
+        .slider-anchors {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            top: 22px;
+            left: 6px;
+            right: 6px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .anchor {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #ccc;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .dynamic-text {
+            font-family: 'Merriweather', serif;
+            font-size: 32px; 
+            line-height: 1.8; 
+            text-align: center; 
+            min-height: 220px;
+            display: block; 
+            max-width: 950px;
+            margin: 20px auto;
+            padding: 30px 40px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: border-color 0.3s;
+            border: 1px solid #eee;
+        }
+        
+        .word-span {
+            display: inline; 
+            padding: 4px 2px;
+            margin: 0 1px;
+            border-radius: 4px;
+            transition: background-color 0.4s, color 0.4s, transform 0.3s;
+        }
+        
+        .word-span.highlighted {
+            background-color: var(--highlight-meinung);
+            color: #000;
+            font-weight: 500;
+        }
+        
+        .word-span.highlighted-strong {
+             background-color: var(--opinion);
+             color: #fff;
+             font-weight: 700;
+        }
+        
+        .word-span.highlighted-irony {
+            background-color: var(--highlight-irony);
+            color: #4a148c;
+            font-style: italic;
+        }
+
+        /* Buttons und Info-Boxen */
+        .reveal-btn {
+            margin-top: 30px;
+            background-color: var(--ink);
+            color: white;
+            border: none;
+            border-radius: 50%; 
+            width: 50px;
+            height: 50px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 20px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .reveal-btn.active {
+            opacity: 1;
+            pointer-events: all;
+            background-color: var(--accent);
+        }
+        
+        .reveal-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+
+        .info-box {
+            margin-top: 20px;
+            padding: 20px 30px;
+            border-radius: 8px;
+            background: #fff;
+            border-left: 6px solid transparent;
+            display: none; 
+            max-width: 800px;
+            font-size: 18px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            line-height: 1.5;
+            animation: popIn 0.4s ease;
+        }
+        
+        .info-box.opinion { border-color: var(--opinion); }
+        .info-box.opinion strong { color: var(--opinion); }
+        
+        .info-box.irony { border-color: var(--irony); }
+        .info-box.irony strong { color: var(--irony); }
+        
+        /* --- Tafelbild (Step 4) --- */
+        .tafelbild-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+            margin: 20px auto;
+        }
+        
+        .tafelbild-col {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .tafelbild-header {
+            padding: 15px;
+            text-align: center;
+            font-family: 'Merriweather', serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header-info { background-color: var(--neutral); }
+        .header-opinion { background-color: var(--opinion); }
+        
+        .tafelbild-row {
+            padding: 15px 20px; 
+            border-bottom: 1px solid #eee;
+        }
+        .tafelbild-row:last-child { border-bottom: none; }
+        
+        .tb-title {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 5px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tb-title i { opacity: 0.6; }
+        
+        /* Verbesserte Liste für Tafelbild */
+        .tb-content ul {
+            padding-left: 20px;
+            margin: 5px 0 0 0;
+            font-size: 16px;
+            color: #555;
+            line-height: 1.5;
+        }
+        .tb-content li {
+            margin-bottom: 4px;
+        }
+        .tb-content strong {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        /* --- Themenpool (Step 5) --- */
+        .pool-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+        
+        .snippet {
+            background-color: #fffdf0; /* Zeitungs-Gelb */
+            padding: 20px;
+            width: 300px;
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            position: relative;
+            border: 1px solid #e0e0e0;
+            cursor: default;
+        }
+        
+        .snippet:hover {
+            transform: scale(1.05) rotate(0deg) !important;
+            z-index: 10;
+            box-shadow: 5px 10px 15px rgba(0,0,0,0.15);
+        }
+        
+        /* Optik: Schnipsel-Kante oben */
+        .snippet::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: repeating-linear-gradient(45deg, #fffdf0, #fffdf0 5px, #fcf8e3 5px, #fcf8e3 10px);
+        }
+
+        .snippet h3 {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            margin: 0 0 10px 0;
+            font-family: 'Roboto', sans-serif;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        
+        .snippet p {
+            font-size: 18px;
+            line-height: 1.4;
+            color: #222;
+        }
+        
+        /* Verschiedene Schriftarten für die Schnipsel */
+        .font-serif { font-family: 'Merriweather', serif; }
+        .font-mono { font-family: 'Courier Prime', monospace; font-size: 16px !important; }
+        .font-bold { font-family: 'Oswald', sans-serif; font-size: 20px !important; font-weight: 500; } /* Entfernt uppercase für ganze Sätze */
+
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     </style>
 </head>
-<body class="flex flex-col min-h-screen justify-between bg-[#f4f1ea]">
+<body>
 
-    <!-- Folie 0: Passwort-Bildschirm (Start) -->
-    <div id="password-screen" class="slide active p-4 md:p-8 lg:p-12 w-full max-w-5xl mx-auto rounded-2xl shadow-xl">
-        <div class="text-center flex flex-col items-center justify-center min-h-[75vh]">
-            <!-- Icon: Zeitung -->
-            <div class="w-16 h-16 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-lg lucide lucide-newspaper"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2Z"/><path d="M8 6h8"/><path d="M8 10h8"/><path d="M8 14h4"/></svg>
-            </div>
-            <h1 class="text-3xl md:text-4xl font-bold text-teal-800 mb-2 font-newspaper">Die zwei Stimmen der Zeitung</h1>
-            <p class="text-xl text-gray-700 mb-12">Euer Thema für heute</p>
+<div class="board-container">
+    
+    <!-- Navigation (Neutral I - V) -->
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="setStep(1)">I</button>
+        <button class="nav-btn" onclick="setStep(2)">II</button>
+        <button class="nav-btn" onclick="setStep(3)">III</button>
+        <button class="nav-btn" onclick="setStep(4)">IV</button>
+        <button class="nav-btn" onclick="setStep(5)">V</button>
+    </nav>
+
+    <!-- STUFE 1: BERICHT / ANALYSE -->
+    <div id="step-1" class="stage active">
+        <h2>Die Meldung / Der Bericht</h2>
+        
+        <div class="report-visual">
+            <i class="fa-solid fa-calendar-days" style="color: var(--accent);"></i>
+        </div>
+
+        <!-- Präzise Markierung -->
+        <div class="text-box-large">
+            <span class="word" data-highlight="fakt">Die Regierung</span>
+            <span class="word" data-highlight="neutral">prüft</span>
+            <span class="word">eine</span>
+            <span class="word" data-highlight="meinung">Verkürzung</span>
+            <span class="word">der Sommerferien</span>
+            <span class="word">auf</span>
+            <span class="word" data-highlight="fakt">vier Wochen,</span>
+            <span class="word">um die</span>
+            <span class="word" data-highlight="neutral">Lernleistung</span>
+            <span class="word">zu steigern.</span>
+        </div>
+
+        <div class="analysis-section" id="merkmale-wrapper">
+            <button class="show-merkmale-btn" onclick="toggleMerkmale()">Merkmale anzeigen</button>
             
-            <button id="showPasswordModalButton" class="p-4 px-8 bg-teal-600 text-white rounded-lg shadow-lg hover:bg-teal-700 transition font-semibold text-lg hover:scale-105 flex items-center">
-                Stunde starten
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play ml-2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </button>
+            <div class="analysis-grid" id="analysis-grid">
+                
+                <div class="analysis-card" data-key="fakt" onclick="reveal(this, 'fakt')">
+                    <div class="placeholder">Faktenbasiert</div>
+                    <div class="hidden-content"><i class="fa-solid fa-check-double"></i>W-Fragen</div>
+                </div>
+                <div class="analysis-card" data-key="neutral" onclick="reveal(this, 'neutral')">
+                    <div class="placeholder">Neutrale Sprache</div>
+                    <div class="hidden-content"><i class="fa-solid fa-scale-balanced"></i>Informierend</div>
+                </div>
+                <div class="analysis-card" data-key="meinung" onclick="reveal(this, 'meinung')">
+                    <div class="placeholder">Keine eigene Meinung</div>
+                    <div class="hidden-content" style="text-align: center; color: var(--opinion);">
+                        <i class="fa-solid fa-user-slash"></i>Objektiv
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STUFE 2: KOMMENTAR / REGLER -->
+    <div id="step-2" class="stage stage-2">
+        <h2 style="border-color: #ef6c00; color: #ef6c00;">Stil-Check: Kommentar</h2>
+        
+        <div class="dynamic-text" id="text-display-2">
+            <!-- Text wird per JS geladen -->
+        </div>
+
+        <div class="slider-wrapper">
+            <div class="slider-anchors">
+                <div class="anchor"></div>
+                <div class="anchor"></div>
+                <div class="anchor"></div>
+            </div>
+            <input type="range" min="0" max="2" value="0" step="1" id="slider-2" oninput="updateText2(this.value)">
+        </div>
+
+        <button id="btn-reveal-2" class="reveal-btn icon-only" onclick="showInfo('info-2', this)">
+            <i class="fa-solid fa-lightbulb"></i>
+        </button>
+
+        <div class="info-box opinion" id="info-2">
+            <strong>Beobachtung:</strong> 
+            <span id="info-text-2">
+                Die Sprache verliert ihre Neutralität. Wertende Adjektive ("unsinnig") und eine klare Haltung machen aus der Nachricht eine <strong>Meinung</strong>.
+            </span>
+        </div>
+    </div>
+
+    <!-- STUFE 3: GLOSSE / ÜBERSTEIGERUNG -->
+    <div id="step-3" class="stage stage-3">
+        <h2 style="border-color: #7b1fa2; color: #7b1fa2;">Stil-Check: Glosse</h2>
+        
+        <div class="dynamic-text" id="text-display-3" style="font-style: italic;">
+            <!-- Text wird per JS geladen -->
+        </div>
+
+        <div class="slider-wrapper">
+            <div class="slider-anchors">
+                <div class="anchor"></div>
+                <div class="anchor"></div>
+                <div class="anchor"></div>
+            </div>
+            <input type="range" min="0" max="2" value="0" step="1" id="slider-3" oninput="updateText3(this.value)">
+        </div>
+
+        <button id="btn-reveal-3" class="reveal-btn icon-only" onclick="showInfo('info-3', this)">
+             <i class="fa-solid fa-lightbulb"></i>
+        </button>
+
+        <div class="info-box irony" id="info-3">
+            <strong>Die Glosse:</strong><br>
+            Der Text überspitzt die Realität. Durch <span style='text-decoration: underline;'>Ironie</span> und <span style='text-decoration: underline;'>absurde Übertreibung</span> wird das Thema ins Lächerliche gezogen.
         </div>
     </div>
     
-    <!-- Passwort-Modal (Versteckt & Neu Gestaltet) -->
-    <div id="password-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-            <!-- Kopfzeile des Modals -->
-            <div class="bg-teal-600 p-6 text-white flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round mr-4 flex-shrink-0"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"/><circle cx="16.5" cy="7.5" r="2.5"/></svg>
-                <h3 class="text-xl font-semibold">Schlüsselwort benötigt!</h3>
-            </div>
-            <!-- Inhalt des Modals -->
-            <div class="p-8 text-center">
-                <p class="text-gray-700 mb-6 text-lg">Wie nennt man die "Abteilungen" einer Zeitung (z.B. Sport, Politik) mit einem Fachbegriff?</p>
-                <input type="text" id="passwordInput" class="password-input w-full" placeholder="Passwort...">
-                <p id="passwordFeedback" class="h-6 mt-2 text-sm text-red-600 font-semibold"></p>
-                <button id="unlockButton" class="mt-3 p-3 px-6 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold text-base w-full">
-                    Freischalten
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Hauptinhalt: Container für die Präsentationsfolien (Versteckt) -->
-    <main id="presentation-content" class="flex-grow p-4 md:p-8 lg:p-12 w-full max-w-5xl mx-auto hidden">
-
-        <!-- Folie 1: Einstieg & Problem-Reaktivierung (ÜBERARBEITET) -->
-        <div class="slide p-8 rounded-2xl shadow-xl" data-slide="1">
-            <div class="flex items-center mb-6">
-                <!-- Icon: Sprechblasen -->
-                <div class="w-12 h-12 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md lucide lucide-message-circle-more"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+    <!-- STUFE 4: TAFELBILD -->
+    <div id="step-4" class="stage stage-4">
+        <h2>Vom Fakt zur Meinung</h2>
+        
+        <div class="tafelbild-grid">
+            <!-- Spalte 1: Informierend -->
+            <div class="tafelbild-col">
+                <div class="tafelbild-header header-info">
+                    Informierend (Tatsachen)
                 </div>
-                <div>
-                    <span class="text-sm font-semibold text-teal-600 uppercase tracking-wider">Schritt 1: Das Problem</span>
-                    <h2 class="text-2xl font-bold text-gray-800">Wie spricht ein Ressort?</h2>
-                </div>
-            </div>
-            
-            <div class="space-y-6">
-                
-                <!-- NEU: Anknüpfung/Kontext -->
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h3 class="font-semibold text-lg text-gray-700 mb-2">Zur Erinnerung:</h3>
-                    <p class="text-gray-700 text-lg">Letzte Stunde haben wir die "Abteilungen" der Zeitung entdeckt: die <strong>Ressorts</strong>.</p>
-                    <p class="text-gray-600 text-base italic">(z.B. Politik, Sport, Lokales, Kultur, Wirtschaft...)</p>
-                </div>
-
-                <div>
-                    <h3 class="font-semibold text-lg text-gray-700 mb-2">Heutige Frage:</h3>
-                    <p class="text-gray-700 mb-4 text-lg">Schauen wir uns zwei Überschriften aus dem selben Ressort an (z.B. Politik). <strong>Wo genau liegt der Unterschied?</strong></p>
-                    
-                    <!-- Die zwei Überschriften als visuelle Blöcke -->
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <!-- Überschrift A: Sachlich (Pastellblau) -->
-                        <div class="bg-blue-50 border-l-4 border-blue-300 p-4 rounded-lg shadow-sm">
-                            <span class="text-xs font-semibold text-blue-700 uppercase tracking-wider flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text mr-2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
-                                Überschrift A
-                            </span>
-                            <p class="font-newspaper text-xl text-blue-900 mt-2">"Bundestag beschließt neues Klimapaket mit 110 zu 90 Stimmen"</p>
-                        </div>
-                        <!-- Überschrift B: Meinung (Pastell-Amber) -->
-                        <div class="bg-amber-50 border-l-4 border-amber-300 p-4 rounded-lg shadow-sm">
-                            <span class="text-xs font-semibold text-amber-700 uppercase tracking-wider flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square mr-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                Überschrift B
-                            </span>
-                            <p class="font-newspaper text-xl text-amber-900 mt-2">"Ein Desaster für das Klima: Der Bundestag hat versagt"</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Interaktiver Tipp-Button -->
-                <div class="mt-6 text-center">
-                    <button id="revealHintButton" class="inline-flex items-center text-sm font-semibold text-teal-600 hover:text-teal-800 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lightbulb mr-2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.7.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-                        Braucht ihr einen Tipp?
-                    </button>
-                    <div id="hintBox" class="hidden mt-3 bg-gray-100 p-3 rounded-lg text-gray-700 text-base shadow-inner max-w-lg mx-auto">
-                        <strong>Tipp:</strong> Achtet darauf, <em>wie</em> über das Thema gesprochen wird. Ist die Sprache neutral oder ist sie wertend?
-                    </div>
-                </div>
-
-                <!-- Interaktiver Teil (Click-to-Reveal) -->
-                <div class="mt-6 pt-6 border-t border-gray-200 text-center">
-                    <button id="revealResolutionButton" class="p-3 px-6 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition font-semibold text-base">
-                        Auflösung anzeigen
-                    </button>
-                </div>
-                
-                <!-- Auflösung (zunächst versteckt) -->
-                <div id="resolutionSection" class="hidden">
-                    <h3 class="font-semibold text-lg text-gray-700 mb-2">Die Auflösung: Zwei "Stimmen"</h3>
-                    <p class="text-gray-700 text-lg">Zeitungen (und ihre Ressorts) haben zwei Hauptstimmen, um mit uns zu sprechen:</p>
-                    <ul class="list-none space-y-2 mt-2">
-                        <li class="flex items-start p-3 bg-blue-50 rounded-md">
-                            <strong class="text-blue-800 w-32 flex-shrink-0">Die sachliche Stimme (BERICHT)</strong>
-                            <!-- ÄNDERUNG: Besserer Kontext statt Verweis -->
-                            <span class="text-blue-900 text-lg">Informiert neutral und objektiv über ein Ereignis.</span>
-                        </li>
-                        <li class="flex items-start p-3 bg-amber-50 rounded-md">
-                            <strong class="text-amber-800 w-32 flex-shrink-0">Die persönliche Stimme (KOMMENTAR)</strong>
-                            <!-- ÄNDERUNG: Besserer Kontext statt Verweis -->
-                            <span class="text-amber-900 text-lg">Bewertet ein Ereignis und will zum Nachdenken anregen.</span>
-                        </li>
-                    </ul>
-                    <!-- GELÖSCHT: Der lange Textblock über Qualitätszeitungen ist entfernt -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Folie 2: Erarbeitung -->
-        <div class="slide p-8 rounded-2xl shadow-xl" data-slide="2">
-            <div class="flex items-center mb-6">
-                <!-- Icon: Lupe -->
-                <div class="w-12 h-12 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-teal-600 uppercase tracking-wider">Schritt 2: Eure Mission (ca. 20-25 Min.)</span>
-                    <h2 class="text-2xl font-bold text-gray-800">Die Stimmen-Detektive</h2>
-                </div>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-8">
-                <!-- Linke Spalte: Methode & Material -->
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="font-semibold text-xl text-gray-700">So arbeitet ihr:</h3>
-                        <p class="text-gray-700 text-lg">Partnerarbeit (2er-Teams)</p>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-xl text-gray-700">Was ihr braucht:</h3>
-                        <ul class="list-disc list-inside text-gray-700 text-lg">
-                            <li>1 Zeitung pro Team</li>
-                            <li>1 Arbeitsblatt "Die Stimmen-Detektive"</li>
+                <div class="tafelbild-row">
+                    <div class="tb-title"><i class="fa-regular fa-newspaper"></i> Meldung / Bericht</div>
+                    <div class="tb-content">
+                        <ul>
+                            <li><strong>Funktion:</strong> Objektive Information</li>
+                            <li><strong>Inhalt:</strong> W-Fragen (Fakten)</li>
+                            <li><strong>Sprache:</strong> Nüchtern, Neutral</li>
                         </ul>
                     </div>
                 </div>
-                
-                <!-- Rechte Spalte: Visualisierung des Arbeitsblatts -->
-                <div class="bg-teal-50 p-6 rounded-lg border border-teal-200 shadow-inner">
-                    <h3 class="font-bold text-xl text-teal-800 mb-4 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list mr-2 flex-shrink-0"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
-                        Eure Aufträge (auf dem AB)
-                    </h3>
-                    <ul class="space-y-3">
-                        <li class="flex items-start">
-                            <span class="bg-teal-600 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 font-sans">1</span>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">Wählt euer Ressort</h4>
-                                <p class="text-sm text-gray-700">(z.B. Politik, Sport, Lokales)</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-teal-600 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 font-sans">2</span>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">Findet die "sachliche Stimme" (Bericht)</h4>
-                                <p class="text-sm text-gray-700">Tipp: Sucht nach reinen W-Fragen (Wer, Was, Wann, Wo?).</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-teal-600 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 font-sans">3</span>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">Findet die "persönliche Stimme" (Kommentar)</h4>
-                                <p class="text-sm text-gray-700">Tipp: Achtet auf Signalwörter (Kommentar, Glosse) oder wertende Adjektive (z.B. "furchtbar", "großartig").</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-teal-600 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-1 flex-shrink-0 font-sans">4</span>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">Euer Analyse-Memo</h4>
-                                <p class="text-sm text-gray-700">Frage: "Warum braucht ein Ressort beide Stimmen? Warum reichen nicht nur Berichte?"</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- GELÖSCHT: Folie 3 (Analyse) wurde entfernt -->
-
-        <!-- Folie 3: Interaktive Sicherung (Tafelbild) (ALT Folie 4) -->
-        <div class="slide p-8 rounded-2xl shadow-xl" data-slide="3">
-            <div class="flex items-center mb-6">
-                <!-- Icon: Check/Schild -->
-                <div class="w-12 h-12 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md lucide lucide-clipboard-check"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-teal-600 uppercase tracking-wider">Schritt 3: Das Ergebnis</span>
-                    <h2 class="text-2xl font-bold text-gray-800">Zusammenfassung: Die Zwei Stimmen</h2>
-                </div>
-            </div>
-            
-            <!-- Text entfernt -->
-            <p class="text-lg text-gray-700 mb-6 text-center">
-                Halten wir die beiden Stimmen, die ihr gefunden habt, fest:
-            </p>
-
-            <!-- Interaktive Buttons -->
-            <div class="flex justify-center gap-6 mb-6">
-                <button id="revealBericht" class="p-4 px-6 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition font-semibold text-lg w-1/2 text-left flex items-center justify-between">
-                    Stimme 1: Der BERICHT
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-circle"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/></svg>
-                </button>
-                <button id="revealKommentar" class="p-4 px-6 bg-amber-600 text-white rounded-lg shadow-lg hover:bg-amber-700 transition font-semibold text-lg w-1/2 text-left flex items-center justify-between">
-                    Stimme 2: Der KOMMENTAR
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-circle"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/></svg>
-                </button>
-            </div>
-
-            <!-- Versteckte Boxen (Tafelbild) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- Spalte 1: BERICHT (Versteckt) -->
-                <div id="berichtBox" class="hidden bg-blue-50 p-6 rounded-lg shadow-inner border border-blue-200">
-                    <h5 class="text-2xl font-bold text-blue-800 mb-3 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text mr-2 flex-shrink-0"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
-                        1. Der BERICHT
-                    </h5>
-                    <p class="text-sm font-semibold text-blue-700 mb-4">(Die sachliche Stimme)</p>
-                    <ul class="space-y-3 text-lg">
-                        <li class="flex">
-                            <strong class="w-20 text-blue-800">Was?</strong>
-                            <span class="text-blue-900">Fakten, W-Fragen</span>
-                        </li>
-                        <li class="flex">
-                            <strong class="w-20 text-blue-800">Ziel?</strong>
-                            <span class="text-blue-900 font-semibold">INFORMATION</span>
-                        </li>
-                        <li class="flex">
-                            <strong class="w-20 text-blue-800">Bsp:</strong>
-                            <!-- BESSERE BEISPIELE -->
-                            <span class="text-blue-900 text-base">Nachricht, Meldung, reiner Spielbericht</span>
-                        </li>
-                        <!-- NEU: Woran erkennt man? -->
-                        <!-- ÄNDERUNG: Aus der Liste entfernt, um Quetschen zu verhindern -->
-                    </ul>
-                    <!-- NEU: "Erkennt man an" als eigener Block -->
-                    <div class="mt-4 pt-3 border-t border-blue-200">
-                        <h6 class="font-semibold text-blue-800">Erkennt man an:</h6>
-                        <p class="text-blue-900 text-base">Neutrale Sprache, keine Wertung, objektiv, Fokus auf W-Fragen.</p>
-                    </div>
-                </div>
-                
-                <!-- Spalte 2: KOMMENTAR (Versteckt) -->
-                <div id="kommentarBox" class="hidden bg-amber-50 p-6 rounded-lg shadow-inner border border-amber-200">
-                    <h5 class="text-2xl font-bold text-amber-800 mb-3 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-check mr-2 flex-shrink-0"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-                        2. Der KOMMENTAR
-                    </h5>
-                    <p class="text-sm font-semibold text-amber-700 mb-4">(Die persönliche Stimme)</p>
-                    <ul class="space-y-3 text-lg">
-                        <li class="flex">
-                            <strong class="w-20 text-amber-800">Was?</strong>
-                            <span class="text-amber-900">Meinung, Wertung, Argumente</span>
-                        </li>
-                        <li class="flex">
-                            <strong class="w-20 text-amber-800">Ziel?</strong>
-                            <span class="text-amber-900 font-semibold">MEINUNGSBILDUNG (Anregung)</span>
-                        </li>
-                        <li class="flex">
-                            <strong class="w-20 text-amber-800">Bsp:</strong>
-                            <!-- BESSERE BEISPIELE -->
-                            <span class="text-amber-900 text-base">Leitartikel, Glosse, Kolumne, Rezension</span>
-                        </li>
-                        <!-- NEU: Woran erkennt man? -->
-                        <!-- ÄNDERUNG: Aus der Liste entfernt, um Quetschen zu verhindern -->
-                    </ul>
-                    <!-- NEU: "Erkennt man an" als eigener Block -->
-                    <div class="mt-4 pt-3 border-t border-amber-200">
-                        <h6 class="font-semibold text-amber-800">Erkennt man an:</h6>
-                        <p class="text-amber-900 text-base">Wertende Adjektive (z.B. "großartig", "schlecht"), persönliche Meinung, "Ich/Wir"-Form, klare Haltung.</p>
+                <div class="tafelbild-row">
+                    <div class="tb-title"><i class="fa-solid fa-camera-retro"></i> Reportage</div>
+                    <div class="tb-content">
+                        <ul>
+                            <li><strong>Funktion:</strong> Info + Erlebnis ("Kino im Kopf")</li>
+                            <li><strong>Inhalt:</strong> Fakten + Atmosphäre</li>
+                            <li><strong>Sprache:</strong> Anschaulich, Szenisch</li>
+                        </ul>
                     </div>
                 </div>
             </div>
             
-            <!-- NEU: Button für "Warum wichtig?"-Modal -->
-            <div class="mt-8 pt-6 border-t border-gray-200 text-center">
-                <button id="openWhyModal" class="inline-flex items-center text-lg font-semibold text-teal-600 hover:text-teal-800 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scale mr-2"><path d="m16 16 3-8 3 8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3l3-8 3 8h6Z"/><path d="M12 16V4"/><path d="M4 6h16"/><path d="M12 4l-1.5 1.5M12 4l1.5 1.5"/></svg>
-                    Warum ist beides in einem Ressort so wichtig?
-                </button>
-            </div>
-
-        </div>
-
-    </main>
-    
-    <!-- NEU: "Warum Wichtig?"-Modal -->
-    <div id="why-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
-            <!-- Kopfzeile des Modals -->
-            <div class="bg-teal-600 p-6 text-white flex justify-between items-center">
-                <h3 class="text-xl font-semibold flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scale mr-3 flex-shrink-0"><path d="m16 16 3-8 3 8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3l3-8 3 8h6Z"/><path d="M12 16V4"/><path d="M4 6h16"/><path d="M12 4l-1.5 1.5M12 4l1.5 1.5"/></svg>
-                    Darum braucht es die Balance
-                </h3>
-                <button id="closeWhyModal" class="text-white opacity-70 hover:opacity-100 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                </button>
-            </div>
-            <!-- Inhalt des Modals -->
-            <div class="p-8 space-y-6">
-                <!-- Fall 1: Nur Berichte -->
-                <div class="bg-blue-50 p-5 rounded-lg shadow-inner border border-blue-200">
-                    <h5 class="text-xl font-bold text-blue-800 mb-2 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text mr-2 flex-shrink-0"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
-                        Nur BERICHTE
-                    </h5>
-                    <p class="text-lg text-blue-900 font-semibold">
-                        ... uns würde die Einordnung, Bewertung und Orientierung fehlen.
-                    </p>
+            <!-- Spalte 2: Meinungsbildend -->
+            <div class="tafelbild-col">
+                <div class="tafelbild-header header-opinion">
+                    Meinungsbildend (Ansichten)
                 </div>
-                
-                <!-- Fall 2: Nur Kommentare -->
-                <div class="bg-amber-50 p-5 rounded-lg shadow-inner border border-amber-200">
-                    <h5 class="text-xl font-bold text-amber-800 mb-2 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-quote mr-2 flex-shrink-0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 12a.5.5 0 0 0-.5.5v.5a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5v-.5a.5.5 0 0 0-.5-.5H8Z"/><path d="M12 12a.5.5 0 0 0-.5.5v.5a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5v-.5a.5.5 0 0 0-.5-.5h-.5Z"/><path d="M16 12a.5.5 0 0 0-.5.5v.5a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5v-.5a.5.5 0 0 0-.5-.5h-.5Z"/></svg>
-                        Nur KOMMENTARE
-                    </h5>
-                    <p class="text-lg text-amber-900 font-semibold">
-                        <!-- ÄNDERUNG: Asterisk entfernt -->
-                        ... uns würden die reinen Fakten fehlen, um uns eine eigene Meinung zu bilden.
-                    </p>
+                <div class="tafelbild-row">
+                    <div class="tb-title"><i class="fa-regular fa-comment-dots"></i> Kommentar</div>
+                    <div class="tb-content">
+                        <ul>
+                            <li><strong>Funktion:</strong> Überzeugen, Stellung beziehen</li>
+                            <li><strong>Inhalt:</strong> Subjektive Meinung, Argumente</li>
+                            <li><strong>Sprache:</strong> Wertend, Appellativ</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tafelbild-row">
+                    <div class="tb-title"><i class="fa-solid fa-masks-theater"></i> Glosse</div>
+                    <div class="tb-content">
+                        <ul>
+                            <li><strong>Funktion:</strong> Unterhalten, Verspotten</li>
+                            <li><strong>Inhalt:</strong> Überspitzung eines Themas</li>
+                            <li><strong>Sprache:</strong> Ironie, Übertreibung, Pointe</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer: Navigation & Fortschrittsanzeige (Versteckt) -->
-    <footer id="presentation-footer" class="sticky bottom-0 bg-white shadow-lg border-t border-gray-200 p-4 z-10 hidden">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
-            
-            <!-- Button: Zurück -->
-            <button id="prevButton" class="nav-button p-3 rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-all shadow-md disabled:bg-gray-300 disabled:shadow-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            </button>
-            
-            <!-- Fortschritts-Punkte -->
-            <div id="progress-dots" class="flex space-x-3">
-                <!-- Punkte werden dynamisch von JS erstellt -->
+    <!-- STUFE 5: THEMENPOOL -->
+    <div id="step-5" class="stage stage-5">
+        <h2>Themenpool: Eure Story</h2>
+        
+        <div class="pool-grid">
+            <div class="snippet" style="transform: rotate(-2deg);">
+                <h3><i class="fa-solid fa-utensils"></i> Mensa-News</h3>
+                <p class="font-serif">Die Kantinenleitung hat angekündigt, das Angebot ab dem kommenden Monat vollständig auf vegetarische Gerichte umzustellen.</p>
             </div>
             
-            <!-- Button: Vorwärts -->
-            <button id="nextButton" class="nav-button p-3 rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-all shadow-md disabled:bg-gray-300 disabled:shadow-none">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </button>
+            <div class="snippet" style="transform: rotate(1deg);">
+                <h3><i class="fa-solid fa-mobile-screen"></i> Handyverbot</h3>
+                <p class="font-bold">Die Schulkonferenz hat ein vollständiges Nutzungsverbot von Mobiltelefonen während der Pausenzeiten beschlossen.</p>
+            </div>
+            
+            <div class="snippet" style="transform: rotate(-1deg);">
+                <h3><i class="fa-solid fa-clock"></i> Unterrichtsbeginn</h3>
+                <p class="font-mono">Die Schulleitung diskutiert derzeit eine Verschiebung des Unterrichtsbeginns auf 9 Uhr, um dem Biorythmus der Schüler gerecht zu werden.</p>
+            </div>
+            
+            <div class="snippet" style="transform: rotate(3deg);">
+                <h3><i class="fa-solid fa-robot"></i> Künstliche Intelligenz</h3>
+                <p class="font-serif">Das Lehrerkollegium berät über ein generelles Verbot von KI-basierten Textgeneratoren für die Anfertigung von Hausaufgaben.</p>
+            </div>
+            
+            <div class="snippet" style="transform: rotate(-3deg);">
+                <h3><i class="fa-solid fa-briefcase"></i> Pflichtpraktikum</h3>
+                <p class="font-mono">Das Bildungsministerium erwägt die Einführung verpflichtender Berufspraktika während der Ferienzeiten für alle Schüler der Oberstufe.</p>
+            </div>
+            
+            <div class="snippet" style="transform: rotate(2deg);">
+                <h3><i class="fa-solid fa-shirt"></i> Kleiderordnung</h3>
+                <p class="font-bold">Die Hausordnung soll dahingehend geändert werden, dass das Tragen von Sportbekleidung außerhalb des Sportunterrichts untersagt ist.</p>
+            </div>
         </div>
-    </footer>
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            // --- Passwort-Logik (Folie 0) ---
-            const passwordScreen = document.getElementById('password-screen');
-            const passwordModal = document.getElementById('password-modal');
-            const showPasswordModalButton = document.getElementById('showPasswordModalButton');
-            const passwordInput = document.getElementById('passwordInput');
-            const unlockButton = document.getElementById('unlockButton');
-            const passwordFeedback = document.getElementById('passwordFeedback');
-            
-            const presentationContent = document.getElementById('presentation-content');
-            const presentationFooter = document.getElementById('presentation-footer');
+</div>
 
-            // NEU: Modal "Warum Wichtig?"
-            const whyModal = document.getElementById('why-modal');
-            const openWhyModal = document.getElementById('openWhyModal');
-            const closeWhyModal = document.getElementById('closeWhyModal');
-            
-            // --- KORREKTUR: Alle Slider-Variablen hier definieren ---
-            const prevButton = document.getElementById('prevButton');
-            const nextButton = document.getElementById('nextButton');
-            const dotsContainer = document.getElementById('progress-dots');
-            
-            let currentSlide = 0;
-            let slides = [];
-            let totalSlides = 0;
-            // --- ENDE KORREKTUR ---
-
-            showPasswordModalButton.addEventListener('click', () => {
-                passwordModal.classList.remove('hidden');
-                passwordInput.focus();
-            });
-
-            unlockButton.addEventListener('click', () => {
-                const input = passwordInput.value.trim().toLowerCase();
-                if (input === 'ressort') {
-                    // Richtiges Passwort
-                    passwordModal.classList.add('hidden');
-                    passwordScreen.classList.remove('active');
-                    passwordScreen.classList.add('hidden'); // Verstecke Passwort-Bildschirm komplett
-
-                    // Rest der Präsentation freischalten
-                    presentationContent.classList.remove('hidden');
-                    presentationFooter.classList.remove('hidden');
-                    
-                    // Slider initialisieren
-                    initializeSlider();
-                } else {
-                    // Falsches Passwort
-                    passwordFeedback.textContent = 'Das ist nicht das richtige Schlüsselwort. Tipp: Es ist der Fachbegriff für "Abteilung".';
-                    passwordInput.value = '';
-                }
-            });
-
-            // --- Interaktivität Folie 1 (Auflösung) ---
-            const revealResolutionButton = document.getElementById('revealResolutionButton');
-            const resolutionSection = document.getElementById('resolutionSection');
-            if (revealResolutionButton) {
-                revealResolutionButton.addEventListener('click', () => {
-                    resolutionSection.classList.remove('hidden');
-                    revealResolutionButton.classList.add('hidden'); // Button verstecken
-                });
-            }
-
-            // --- Interaktivität Folie 3 (Tafelbild) ---
-            const revealBericht = document.getElementById('revealBericht');
-            const revealKommentar = document.getElementById('revealKommentar');
-            const berichtBox = document.getElementById('berichtBox');
-            const kommentarBox = document.getElementById('kommentarBox');
-
-            if (revealBericht) {
-                revealBericht.addEventListener('click', () => {
-                    berichtBox.classList.remove('hidden');
-                    // Zeigen, dass geklickt, aber Button bleibt aktiv
-                    revealBericht.classList.add('opacity-70', 'ring-2', 'ring-blue-400'); 
-                });
-            }
-            if (revealKommentar) {
-                revealKommentar.addEventListener('click', () => {
-                    kommentarBox.classList.remove('hidden');
-                    // Zeigen, dass geklickt, aber Button bleibt aktiv
-                    revealKommentar.classList.add('opacity-70', 'ring-2', 'ring-amber-400');
-                });
-            }
-
-            // --- Interaktivität Folie 1 (Tipp) ---
-            const revealHintButton = document.getElementById('revealHintButton');
-            const hintBox = document.getElementById('hintBox');
-            if (revealHintButton) {
-                revealHintButton.addEventListener('click', () => {
-                    hintBox.classList.toggle('hidden');
-                });
-            }
-
-            // --- NEU: "Warum Wichtig?" Modal-Logik ---
-            if (openWhyModal) {
-                openWhyModal.addEventListener('click', () => {
-                    whyModal.classList.remove('hidden');
-                });
-            }
-            if (closeWhyModal) {
-                closeWhyModal.addEventListener('click', () => {
-                    whyModal.classList.add('hidden');
-                });
-            }
-
-            // --- Slider-Funktionen ---
-            function initializeSlider() {
-                // Wähle nur die Folien *innerhalb* des Hauptinhalts
-                slides = document.querySelectorAll('#presentation-content .slide');
-                totalSlides = slides.length;
-                
-                if (totalSlides > 0) {
-                    createProgressDots();
-                    showSlide(0); // Erste Folie (Folie 1) anzeigen
-                }
-            }
-
-            function showSlide(index) {
-                slides.forEach((slide) => {
-                    slide.classList.remove('active');
-                });
-                
-                if (slides[index]) {
-                    slides[index].classList.add('active');
-                    currentSlide = index;
-                }
-                
-                updateUI();
-            }
-
-            function updateUI() {
-                prevButton.disabled = (currentSlide === 0);
-                nextButton.disabled = (currentSlide === totalSlides - 1);
-
-                const dots = dotsContainer.querySelectorAll('.progress-dot');
-                dots.forEach((dot, index) => {
-                    if (index === currentSlide) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
-                    }
-                });
-            }
-
-            function createProgressDots() {
-                dotsContainer.innerHTML = ''; // Vorherige Punkte löschen
-                for (let i = 0; i < totalSlides; i++) {
-                    const dot = document.createElement('div');
-                    dot.classList.add('progress-dot');
-                    dot.dataset.slide = i;
-                    
-                    dot.addEventListener('click', () => {
-                        showSlide(i);
-                    });
-                    
-                    dotsContainer.appendChild(dot);
-                }
-            }
-
-            prevButton.addEventListener('click', () => {
-                if (currentSlide > 0) {
-                    showSlide(currentSlide - 1);
-                }
-            });
-
-            nextButton.addEventListener('click', () => {
-                if (currentSlide < totalSlides - 1) {
-                    showSlide(currentSlide + 1);
-                }
-            });
-
-            // Initialisierung passiert erst nach Passwort-Eingabe
+<script>
+    // Navigation Logic
+    function setStep(stepNum) {
+        document.querySelectorAll('.nav-btn').forEach((btn, index) => {
+            if (index + 1 === stepNum) btn.classList.add('active');
+            else btn.classList.remove('active');
         });
-    </script>
+
+        document.querySelectorAll('.stage').forEach(stage => {
+            stage.classList.remove('active');
+        });
+        document.getElementById(`step-${stepNum}`).classList.add('active');
+        
+        if(stepNum === 2 && document.getElementById('text-display-2').innerHTML.trim() === "") updateText2(0);
+        if(stepNum === 3 && document.getElementById('text-display-3').innerHTML.trim() === "") updateText3(0);
+    }
+    
+    function toggleMerkmale() {
+        const grid = document.getElementById('analysis-grid');
+        const btn = document.querySelector('.show-merkmale-btn');
+        grid.classList.add('visible');
+        btn.style.display = 'none'; 
+    }
+
+    function reveal(card, highlightKey) {
+        card.classList.toggle('revealed');
+        const isRevealed = card.classList.contains('revealed');
+        
+        if (highlightKey === 'meinung') {
+            const hiddenContent = card.querySelector('.hidden-content');
+            const placeholder = card.querySelector('.placeholder');
+            if(isRevealed) {
+                hiddenContent.style.display = 'flex';
+                placeholder.style.display = 'none';
+            } else {
+                 hiddenContent.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+            // Auch markieren (für "Verkürzung")
+        }
+
+        document.querySelectorAll(`.word[data-highlight="${highlightKey}"]`).forEach(span => {
+            span.classList.toggle(`highlight-${highlightKey}`, isRevealed);
+        });
+    }
+    
+    function showInfo(infoId, btn) {
+        document.getElementById(infoId).style.display = 'block';
+        btn.style.display = 'none'; 
+    }
+
+    function buildSentence(parts) {
+        return parts.map(part => {
+            let className = 'word-span';
+            if (part.highlight) className += ' highlighted';
+            if (part.strong) className += ' highlighted-strong';
+            if (part.irony) className += ' highlighted-irony';
+            return `<span class="${className}">${part.text}</span>`;
+        }).join(' ');
+    }
+
+    // ==========================================
+    // SCHRITT 2: KOMMENTAR
+    // ==========================================
+    
+    const text2_L0 = [
+        {text: "Die", highlight: false}, {text: "Regierung", highlight: false}, {text: "prüft", highlight: false}, 
+        {text: "eine", highlight: false}, {text: "Verkürzung", highlight: false}, {text: "der", highlight: false},
+        {text: "Sommerferien", highlight: false}, {text: "auf", highlight: false}, {text: "vier", highlight: false},
+        {text: "Wochen,", highlight: false}, {text: "um", highlight: false}, {text: "die", highlight: false}, 
+        {text: "Lernleistung", highlight: false}, {text: "zu", highlight: false}, {text: "steigern.", highlight: false}
+    ];
+    const text2_L1 = [
+        {text: "Die", highlight: false}, {text: "Regierung", highlight: false}, {text: "schlägt", highlight: false}, 
+        {text: "einen", highlight: false}, {text: "fragwürdigen", highlight: true}, 
+        {text: "Plan", highlight: false}, {text: "vor:", highlight: false}, {text: "die", highlight: false},
+        {text: "Sommerferien", highlight: false}, {text: "werden", highlight: false}, {text: "gekürzt.", highlight: false}, 
+        {text: "Das", highlight: false}, {text: "ist", highlight: false}, {text: "kontraproduktiv.", highlight: true}
+    ];
+    const text2_L2 = [
+        {text: "Das", highlight: false}, {text: "ist", highlight: false}, {text: "respektlos", strong: true}, 
+        {text: "gegenüber", highlight: false}, {text: "unserer", highlight: false}, {text: "Leistung!", highlight: false},
+        {text: "Wir", highlight: false}, {text: "sind", highlight: false}, {text: "keine", highlight: false},
+        {text: "Maschinen,", strong: true}, {text: "die", highlight: false}, {text: "man", highlight: false},
+        {text: "auf", highlight: false}, {text: "Dauerbetrieb", highlight: false}, {text: "schalten", highlight: false},
+        {text: "kann.", highlight: false}, {text: "Wer", highlight: false}, {text: "die", highlight: false},
+        {text: "Pause", highlight: false}, {text: "nimmt,", highlight: false}, {text: "nimmt", highlight: false},
+        {text: "die", highlight: false}, {text: "Motivation.", strong: true}
+    ];
+
+    function updateText2(val) {
+        const display = document.getElementById('text-display-2');
+        const revealBtn = document.getElementById('btn-reveal-2');
+        const infoBox = document.getElementById('info-2');
+        
+        val = parseInt(val);
+
+        if (val === 0) {
+            display.innerHTML = buildSentence(text2_L0);
+            if (infoBox.style.display !== 'block') revealBtn.classList.remove('active');
+        } else {
+            if (val === 1) display.innerHTML = buildSentence(text2_L1);
+            if (val === 2) display.innerHTML = buildSentence(text2_L2);
+            if (infoBox.style.display !== 'block') revealBtn.classList.add('active');
+        }
+    }
+
+    // ==========================================
+    // SCHRITT 3: GLOSSE
+    // ==========================================
+    
+    const text3_L0 = [
+        {text: "Die", highlight: false}, {text: "Schüler", highlight: false}, {text: "brauchen", highlight: false}, 
+        {text: "ihre", highlight: false}, {text: "sechs", highlight: false}, {text: "Wochen", highlight: false}, 
+        {text: "Freiheit,", highlight: false}, {text: "um", highlight: false}, {text: "sich", highlight: false},
+        {text: "zu", highlight: false}, {text: "erholen.", highlight: false}
+    ];
+    
+    const text3_L1 = [
+        {text: "Endlich", highlight: false}, {text: "hat", highlight: false}, {text: "es", highlight: false}, 
+        {text: "jemand", highlight: false}, {text: "erkannt:", highlight: false}, {text: "Sechs", highlight: false},
+        {text: "Wochen", highlight: false}, {text: "Freizeit", highlight: false}, {text: "sind", highlight: false},
+        {text: "eine", highlight: false}, {text: "Zumutung.", irony: true}, {text: "Wer", highlight: false}, 
+        {text: "will", highlight: false}, {text: "schon", highlight: false}, {text: "ausschlafen,", highlight: false},
+        {text: "wenn", highlight: false}, {text: "er", highlight: false}, {text: "stattdessen", highlight: false},
+        {text: "Vokabeln", irony: true}, {text: "lernen", irony: true}, {text: "darf?", irony: true}
+    ];
+    
+    const text3_L2 = [
+        {text: "Ich", highlight: false}, {text: "schlage", highlight: false}, {text: "vor,", highlight: false}, 
+        {text: "wir", highlight: false}, {text: "schaffen", irony: true}, {text: "den", irony: true}, 
+        {text: "Schlaf", irony: true}, {text: "auch", irony: true}, {text: "gleich", irony: true},
+        {text: "ab.", irony: true}, {text: "Völlig", highlight: false}, {text: "ineffizient!", highlight: false},
+        {text: "Mit", highlight: false}, {text: "genug", highlight: false}, {text: "Koffein", highlight: false},
+        {text: "und", highlight: false}, {text: "KI-Implantaten", irony: true}, {text: "könnten", highlight: false},
+        {text: "wir", highlight: false}, {text: "endlich", highlight: false}, {text: "24/7", irony: true},
+        {text: "durchlernen.", irony: true}
+    ];
+
+    function updateText3(val) {
+        const display = document.getElementById('text-display-3');
+        const revealBtn = document.getElementById('btn-reveal-3');
+        const infoBox = document.getElementById('info-3');
+        
+        val = parseInt(val);
+
+        if (val === 0) {
+            display.innerHTML = buildSentence(text3_L0);
+             if (infoBox.style.display !== 'block') revealBtn.classList.remove('active');
+        } else {
+            if (val === 1) display.innerHTML = buildSentence(text3_L1);
+            if (val === 2) display.innerHTML = buildSentence(text3_L2);
+             if (infoBox.style.display !== 'block') revealBtn.classList.add('active');
+        }
+    }
+    
+    // Init on Load
+    window.onload = function() {
+        updateText2(0);
+        updateText3(0);
+    };
+
+</script>
+
 </body>
 </html>
